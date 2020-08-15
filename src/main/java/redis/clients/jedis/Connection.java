@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.Proxy;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -56,6 +57,10 @@ public class Connection implements Closeable {
     this.jedisSocketFactory = jedisSocketFactory;
   }
 
+  public Proxy getProxy() {
+    return jedisSocketFactory.getProxy();
+  }
+
   public Socket getSocket() {
     return socket;
   }
@@ -66,6 +71,10 @@ public class Connection implements Closeable {
 
   public int getSoTimeout() {
     return jedisSocketFactory.getSoTimeout();
+  }
+
+  public void setProxy(Proxy proxy) {
+    jedisSocketFactory.setProxy(proxy);
   }
 
   public void setConnectionTimeout(int connectionTimeout) {

@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.net.Proxy;
 import java.net.URI;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -30,6 +31,7 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
   private final SSLSocketFactory sslSocketFactory;
   private final SSLParameters sslParameters;
   private final HostnameVerifier hostnameVerifier;
+  private final Proxy proxy;
 
   JedisFactory(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final String password, final int database, final String clientName) {
@@ -40,7 +42,7 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
   JedisFactory(final String host, final int port, final int connectionTimeout,
                final int soTimeout, final String user, final String password, final int database, final String clientName) {
     this(host, port, connectionTimeout, soTimeout, user, password, database, clientName,
-            false, null, null, null);
+            false, null, null, null, null);
   }
 
   JedisFactory(final String host, final int port, final int connectionTimeout,
@@ -48,13 +50,13 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
       final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
     this(host, port, connectionTimeout, soTimeout, null, password, database, clientName,
-            ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+            ssl, sslSocketFactory, sslParameters, hostnameVerifier, null);
   }
 
   JedisFactory(final String host, final int port, final int connectionTimeout,
                final int soTimeout, final String user, final String password, final int database, final String clientName,
                final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
-               final HostnameVerifier hostnameVerifier) {
+               final HostnameVerifier hostnameVerifier, final Proxy proxy) {
     this.hostAndPort.set(new HostAndPort(host, port));
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
@@ -66,16 +68,17 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
     this.sslSocketFactory = sslSocketFactory;
     this.sslParameters = sslParameters;
     this.hostnameVerifier = hostnameVerifier;
+    this.proxy = proxy;
   }
 
   JedisFactory(final URI uri, final int connectionTimeout, final int soTimeout,
       final String clientName) {
-    this(uri, connectionTimeout, soTimeout, clientName, null, null, null);
+    this(uri, connectionTimeout, soTimeout, clientName, null, null, null, null);
   }
 
   JedisFactory(final URI uri, final int connectionTimeout, final int soTimeout,
       final String clientName, final SSLSocketFactory sslSocketFactory,
-      final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
+      final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier, final Proxy proxy) {
     if (!JedisURIHelper.isValid(uri)) {
       throw new InvalidURIException(String.format(
         "Cannot open Redis connection due invalid URI. %s", uri.toString()));
@@ -92,6 +95,7 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
     this.sslSocketFactory = sslSocketFactory;
     this.sslParameters = sslParameters;
     this.hostnameVerifier = hostnameVerifier;
+    this.proxy = proxy;
   }
 
   public void setHostAndPort(final HostAndPort hostAndPort) {

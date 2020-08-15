@@ -8,6 +8,7 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.Socket;
 
 public class DefaultJedisSocketFactory implements JedisSocketFactory {
@@ -20,6 +21,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   private SSLSocketFactory sslSocketFactory;
   private SSLParameters sslParameters;
   private HostnameVerifier hostnameVerifier;
+  private Proxy proxy;
 
   public DefaultJedisSocketFactory(String host, int port, int connectionTimeout, int soTimeout,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
@@ -38,7 +40,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   public Socket createSocket() throws IOException {
     Socket socket = null;
     try {
-      socket = new Socket();
+      socket = proxy == null? new Socket() : new Socket(proxy);
       // ->@wjw_add
       socket.setReuseAddress(true);
       socket.setKeepAlive(true); // Will monitor the TCP connection is
@@ -120,5 +122,15 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   @Override
   public void setSoTimeout(int soTimeout) {
     this.soTimeout = soTimeout;
+  }
+
+  @Override
+  public Proxy getProxy() {
+    return proxy;
+  }
+
+  @Override
+  public void setProxy(Proxy proxy) {
+    this.proxy = proxy;
   }
 }

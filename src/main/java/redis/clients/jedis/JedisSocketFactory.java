@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import java.io.IOException;
+import java.net.Proxy;
 import java.net.Socket;
 
 /**
@@ -34,4 +35,12 @@ public interface JedisSocketFactory {
   int getSoTimeout();
 
   void setSoTimeout(int soTimeout);
+
+  default Proxy getProxy() {
+    return null;
+  };
+
+  default void setProxy(Proxy proxy) {
+
+  }
 }
