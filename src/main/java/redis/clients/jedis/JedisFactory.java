@@ -40,6 +40,12 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
   }
 
   JedisFactory(final String host, final int port, final int connectionTimeout,
+      final int soTimeout, final String password, final int database, final String clientName, Proxy proxy) {
+    this(host, port, connectionTimeout, soTimeout, password, database, clientName,
+        false, null, null, null, proxy);
+  }
+
+  JedisFactory(final String host, final int port, final int connectionTimeout,
                final int soTimeout, final String user, final String password, final int database, final String clientName) {
     this(host, port, connectionTimeout, soTimeout, user, password, database, clientName,
             false, null, null, null, null);
@@ -51,6 +57,14 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
       final HostnameVerifier hostnameVerifier) {
     this(host, port, connectionTimeout, soTimeout, null, password, database, clientName,
             ssl, sslSocketFactory, sslParameters, hostnameVerifier, null);
+  }
+
+  JedisFactory(final String host, final int port, final int connectionTimeout,
+      final int soTimeout, final String password, final int database, final String clientName,
+      final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
+      final HostnameVerifier hostnameVerifier, Proxy proxy) {
+    this(host, port, connectionTimeout, soTimeout, null, password, database, clientName,
+            ssl, sslSocketFactory, sslParameters, hostnameVerifier, proxy);
   }
 
   JedisFactory(final String host, final int port, final int connectionTimeout,
@@ -128,8 +142,11 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
   @Override
   public PooledObject<Jedis> makeObject() throws Exception {
     final HostAndPort hp = this.hostAndPort.get();
-    final Jedis jedis = new Jedis(hp.getHost(), hp.getPort(), connectionTimeout, soTimeout,
-        ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+    DefaultJedisSocketFactory jedisSocketFactory = new DefaultJedisSocketFactory(
+        hp.getHost(), hp.getPort(), connectionTimeout, soTimeout, ssl, sslSocketFactory, sslParameters, hostnameVerifier
+    );
+    jedisSocketFactory.setProxy(proxy);
+    final Jedis jedis = new Jedis(jedisSocketFactory);
     try {
       jedis.connect();
       if (user != null) {
